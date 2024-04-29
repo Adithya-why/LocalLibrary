@@ -3,6 +3,7 @@ const Book = require("../models/book");
 
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const bookinstance = require("../models/bookinstance");
 
 
 
@@ -108,12 +109,13 @@ exports.bookinstance_delete_get = asyncHandler(async (req, res, next) => {
 
   
 
-  if(instance == null){
+  if(bookinstances == null){
     res.redirect("/catalog/bookinstances");
   }
 
   res.render("bookinstance_delete",{
     title: "Delete Instance",
+    instance: bookinstances,
     
   })
 
@@ -123,7 +125,10 @@ exports.bookinstance_delete_get = asyncHandler(async (req, res, next) => {
 
 // Handle BookInstance delete on POST.
 exports.bookinstance_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: BookInstance delete POST");
+  
+
+  await BookInstance.findByIdAndDelete(req.body.instanceid);
+  res.redirect("/catalog/bookinstances")
 });
 
 // Display BookInstance update form on GET.
