@@ -3,6 +3,7 @@ const Book = require("../models/book");
 
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const author = require("../models/author");
 
 
 // Display list of all Genre.
@@ -96,12 +97,64 @@ exports.genre_create_post = [
 
 // Display Genre delete form on GET.
 exports.genre_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Genre delete GET");
+  //this request made from genre details page
+
+  //get details of books in that genre
+  const [genre, allBooksBygenre] = await Promise.all([
+    Genre.findById(req.params.id).exec(),
+    Book.find({ genre: req.params.id }, "title summary").exec(),
+  ]);
+
+  console.log(allBooksBygenre);
+
+
+  if (genre === null) {
+    // No results.
+    res.redirect("/catalog/authors");
+  }
+  
+
+  res.render("genre_delete", {
+    title: "Delete Genre",
+    genre: genre,
+    genre_books: allBooksBygenre,
+  });
+
+
 });
 
 // Handle Genre delete on POST.
 exports.genre_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Genre delete POST");
+ 
+
+
+  //get details of books in that genre
+  const [genre, allBooksBygenre] = await Promise.all([
+    Genre.findById(req.params.id).exec(),
+    Book.find({ genre: req.params.id }, "title summary").exec(),
+  ]);
+
+
+
+  if (allBooksBygenre.length > 0) {
+    // Author has books. Render in same way as for GET route.
+    res.render("genre_delete", {
+      title: "Delete Genre",
+      genre: genre,
+      genre_books: allBooksBygenre,
+    });
+    return;
+  } else{
+    //no dependencies
+    //can be safely deleted
+    console.log("BEing delele",req.body.genreid);
+    await Genre.findByIdAndDelete(req.body.genreid);
+    res.redirect("/catalog/genres");
+  }
+
+
+
+
 });
 
 // Display Genre update form on GET.
